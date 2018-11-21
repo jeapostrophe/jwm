@@ -1,0 +1,7 @@
+#!/usr/bin/env racket
+#lang racket/base
+(require jwm/term)
+(module+ main
+  ;; Customize these arguments for your needs
+  (term-main #:options (default-opts)
+             #:default default-select))
