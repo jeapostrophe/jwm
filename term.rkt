@@ -60,24 +60,32 @@
   (port->lines p-output))
 
 ;;;;;;;
+(require jwm/recent)
 
 (define (default-options)
   (list*
-   (choice "open"
-           (λ () (fzf #f (λ (s) (exec (~a "open '" s "'"))))))
-   (choice "edit"
-           (λ () (fzf #f (λ (s) (exec (~a "${EDITOR} '" s "'"))))))
-   (append (tmux-windows))))
+   (choice "open" (λ () (fzf #f open-select)))
+   (choice "edit" (λ () (fzf #f edit-select)))
+   (append (tmux-windows)
+           (recent-files)
+           (recent-dirs))))
 
 (define (tmux-windows)
   (define ws
-    (subprocess->lines "tmux" "list-windows" "-F" "#I #T"))
+    (subprocess->lines "tmux" "list-windows" "-F" "#{window_id} #T"))
   (for/list ([w (in-list ws)])
-    (match-define (regexp #rx"^([0-9]+) (.*?)$" (list _ ids title)) w)
-    (choice (~a "t " title) (λ () (exec (~a "tmux select-window -t @" ids))))))
+    (match-define (regexp #rx"^([^ ]+) (.*?)$" (list _ ids title)) w)
+    (choice (~a "t " title) (λ () (exec (~a "tmux select-window -t " ids))))))
+(define (recent-files)
+  (for/list ([f (in-list (recent-readl "file"))])
+    (choice (~a "f " f) (λ () (edit-select f)))))
+(define (recent-dirs)
+  (for/list ([d (in-list (recent-readl "dir"))])
+    (choice (~a "d " d) (λ () (exec (~a "tmux select-window -t $(tmux new-window -F '#{window_id}' -P -c '" d "')"))))))
 
-(define (default-select s)
-  (displayln s))
+(define (default-select s) (displayln s))
+(define (open-select s) (exec (~a "open '" s "'")))
+(define (edit-select s) (exec (~a "${EDITOR} '" s "'")))
 
 (provide term-main
          default-options
