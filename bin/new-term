@@ -1,0 +1,11 @@
+#!/bin/sh
+. ~/.profile
+SES=jwm
+
+
+if ! tmux has-session -t $SES &> /dev/null ; then
+    tmux new-session -d -s $SES
+    # XXX Make a "start" page
+fi
+
+exec tmux attach-session -t $SES
