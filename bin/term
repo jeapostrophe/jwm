@@ -3,5 +3,5 @@
 (require jwm/term)
 (module+ main
   ;; Customize these arguments for your needs
-  (term-main #:options (default-opts)
-             #:default default-select))
+  (term-main #:options (default-options)
+             #:select default-select))
