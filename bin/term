@@ -34,7 +34,9 @@ function do_fzf() {
     opt=$((for i in $(seq 0 $(expr $OIDX - 1)) ; do
                echo $i ${OPT_DIS[$i]}
            done) | fzf -d " " --with-nth=2.. | cut -d " " -f 1)
-    ${OPT_SEL[$opt]}
+    if [ "$opt" != "" ] ; then
+        ${OPT_SEL[$opt]}
+    fi
 }
 
 # Selectors
