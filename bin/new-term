@@ -4,8 +4,8 @@ SES=jwm
 
 
 if ! tmux has-session -t $SES &> /dev/null ; then
-    tmux new-session -d -s $SES
+    tmux new-session -d -t $SES
     # XXX Make a "start" page
 fi
 
-exec tmux attach-session -t $SES
+exec tmux new-session -t $SES

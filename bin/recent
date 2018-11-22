@@ -1,2 +1,19 @@
 #!/bin/sh
-racket -l jwm/recent -- $* &
+PROG=$(basename $0)
+MODE=$1
+WHAT=$2
+
+DIR=${HOME}/.config/recent
+LOG=${DIR}/${MODE}
+
+if [ $PROG = "recent" ] ; then
+    echo $WHAT >> $LOG
+
+    if [ $(stat -f%z $LOG) -gt 4096 ] ; then
+        TMP=/tmp/t.$$.recent
+        sort -u $LOG > $TMP && mv $TMP $LOG
+    fi
+    exit 1
+elif [ $PROG = "recent-read" ] ; then
+    sort -u ${LOG}
+fi

@@ -1,7 +1,66 @@
-#!/usr/bin/env racket
-#lang racket/base
-(require jwm/term)
-(module+ main
-  ;; Customize these arguments for your needs
-  (term-main #:options (default-options)
-             #:select default-select))
+#!/bin/bash
+
+OPT_SEL=()
+OPT_DIS=()
+OIDX=0
+
+function add_option() {
+    DIS=$1
+    shift 1
+
+    OPT_DIS[$OIDX]="$DIS"
+    OPT_SEL[$OIDX]=$@
+    OIDX=$(expr $OIDX + 1)
+}
+
+function add_options() {
+    TAG=$1
+    SEL=$2
+    shift 2
+    CMD=$@
+
+    while IFS='' read o ; do
+        add_option "$TAG $o" $SEL "$o"
+    done < <($CMD)
+}
+
+function add_tmux_windows() {
+    while read id title ; do
+        add_option "t $title" tmux_select $id
+    done < <(tmux list-windows -F "#{window_id} #T")
+}
+
+function do_fzf() {
+    opt=$((for i in $(seq 0 $(expr $OIDX - 1)) ; do
+               echo $i ${OPT_DIS[$i]}
+           done) | fzf -d " " --with-nth=2.. | cut -d " " -f 1)
+    ${OPT_SEL[$opt]}
+}
+
+# Selectors
+
+function open_select() {
+    open $(fzf)
+}
+function edit_select() {
+    $EDITOR $(fzf)
+}
+function tmux_select() {
+    tmux select-window -t $1
+}
+function dir_select() {
+    DIR=$1
+    tmux select-window -t $(tmux new-window -F '#{window_id}' -P -c "$DIR")
+}
+function file_select() {
+    $EDITOR $1
+}
+
+# Configuration
+
+add_option "open" open_select
+add_option "edit" edit_select
+add_tmux_windows
+add_options d dir_select recent-read dir
+add_options f file_select recent-read file
+do_fzf

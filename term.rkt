@@ -90,3 +90,6 @@
 (provide term-main
          default-options
          default-select)
+
+(module+ main
+  (term-main))
