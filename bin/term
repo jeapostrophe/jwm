@@ -2,10 +2,16 @@
 MODE=$1
 
 FIFO=/tmp/term.$$.pipe
-#mkfifo ${FIFO}.fzf
-#mkfifo ${FIFO}.cut
+mkfifo ${FIFO}.fzf
+mkfifo ${FIFO}.cut
 
-#fzf -d " " --with-nth=2.. <${FIFO}.fzf >${FIFO}.cut &
+fzf -d " " --with-nth=2.. <${FIFO}.fzf >${FIFO}.cut &
+FZF_PID=$!
+
+exec 3> ${FIFO}.fzf
+exec 4< ${FIFO}.cut
+unlink ${FIFO}.fzf
+unlink ${FIFO}.cut
 
 OPT_SEL=()
 OIDX=0
@@ -14,7 +20,11 @@ function add_option() {
     DIS=$1
     shift 1
 
-    echo $OIDX $DIS >>${FIFO}.fzf
+    if kill -0 $FZF_PID >/dev/null 2>&1 ; then
+        echo $OIDX $DIS >&3
+    else
+        break
+    fi
     OPT_SEL[$OIDX]=$@
     OIDX=$(expr $OIDX + 1)
 }
@@ -37,10 +47,9 @@ function add_tmux_windows() {
 }
 
 function do_fzf() {
-    opt=$(fzf -d " " --with-nth=2.. <${FIFO}.fzf | cut -d " " -f 1)
-#    rm ${FIFO}.fzf
-#    read opt rest <${FIFO}.cut
-#    rm ${FIFO}.cut
+    exec 3>&- # Done with input to fzf
+    read opt rest <&4
+    exec 4<&- # Done with output from fzf
     
     if [ "$opt" != "" ] ; then
         ${OPT_SEL[$opt]}
@@ -50,10 +59,16 @@ function do_fzf() {
 # Selectors
 
 function open_select() {
-    open $(fzf)
+    opt=$(fzf)
+    if [ "$opt" != "" ] ; then
+        open $opt
+    fi
 }
 function edit_select() {
-    $EDITOR $(fzf)
+    opt=$(fzf)
+    if [ "$opt" != "" ] ; then
+        $EDITOR $opt
+    fi
 }
 function tmux_select() {
     tmux select-window -t $1
@@ -75,5 +90,4 @@ if [ "$MODE" != "new" ] ; then
 fi
 add_options d dir_select recent-read dir
 add_options f file_select recent-read file
-# XXX Do this early and send the results in to it (use fifo?)
 do_fzf
