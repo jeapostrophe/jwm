@@ -9,7 +9,7 @@ LOG=${DIR}/${MODE}
 if [ $PROG = "recent" ] ; then
     echo $WHAT >> $LOG
 
-    if [ $(stat -f%z $LOG) -gt 4096 ] ; then
+    if [ $(stat -f%z $LOG) -gt 262144 ] ; then
         TMP=/tmp/t.$$.recent
         sort -u $LOG > $TMP && mv $TMP $LOG
     fi

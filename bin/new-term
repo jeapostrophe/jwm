@@ -8,7 +8,6 @@ if ! tmux has-session -t $SES &> /dev/null ; then
     # XXX Make a "start" page
 fi
 
-# XXX See if we can move this into the config
 for i in $(tmux list-sessions -F "#{session_attached} #S" | awk '$1==0{print $2}') ; do
     tmux kill-session -t $i
 done

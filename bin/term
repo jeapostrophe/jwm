@@ -1,14 +1,20 @@
 #!/bin/bash
+MODE=$1
+
+FIFO=/tmp/term.$$.pipe
+#mkfifo ${FIFO}.fzf
+#mkfifo ${FIFO}.cut
+
+#fzf -d " " --with-nth=2.. <${FIFO}.fzf >${FIFO}.cut &
 
 OPT_SEL=()
-OPT_DIS=()
 OIDX=0
 
 function add_option() {
     DIS=$1
     shift 1
 
-    OPT_DIS[$OIDX]="$DIS"
+    echo $OIDX $DIS >>${FIFO}.fzf
     OPT_SEL[$OIDX]=$@
     OIDX=$(expr $OIDX + 1)
 }
@@ -31,9 +37,11 @@ function add_tmux_windows() {
 }
 
 function do_fzf() {
-    opt=$((for i in $(seq 0 $(expr $OIDX - 1)) ; do
-               echo $i ${OPT_DIS[$i]}
-           done) | fzf -d " " --with-nth=2.. | cut -d " " -f 1)
+    opt=$(fzf -d " " --with-nth=2.. <${FIFO}.fzf | cut -d " " -f 1)
+#    rm ${FIFO}.fzf
+#    read opt rest <${FIFO}.cut
+#    rm ${FIFO}.cut
+    
     if [ "$opt" != "" ] ; then
         ${OPT_SEL[$opt]}
     fi
@@ -62,7 +70,10 @@ function file_select() {
 
 add_option "open" open_select
 add_option "edit" edit_select
-add_tmux_windows
+if [ "$MODE" != "new" ] ; then
+    add_tmux_windows
+fi
 add_options d dir_select recent-read dir
 add_options f file_select recent-read file
+# XXX Do this early and send the results in to it (use fifo?)
 do_fzf
