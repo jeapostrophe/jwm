@@ -85,6 +85,15 @@ function file_select() {
 
 # Configuration
 
+# XXX add some "applications" like calendar, irc, todo, browser, etc
+
+# XXX add my bookmarks, etc
+
+# XXX remove these and make a new "open"-like command that calls
+# $EDITOR or open depending on the file type
+
+# XXX also, go through the whole cwd right away rather than putting it
+# behind this
 add_option "open" open_select
 add_option "edit" edit_select
 add_tmux_windows
