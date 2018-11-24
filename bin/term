@@ -1,5 +1,5 @@
 #!/bin/bash
-MODE=$1
+printf "\e]0;TERM\a\033kTERM\033\\"
 
 FIFO=/tmp/term.$$.pipe
 mkfifo ${FIFO}.fzf
@@ -42,7 +42,9 @@ function add_options() {
 
 function add_tmux_windows() {
     while read id title ; do
-        add_option "t $title" tmux_select $id
+        if [ "$title" != "TERM" ] ; then
+            add_option "t $title" tmux_select $id
+        fi
     done < <(tmux list-windows -F "#{window_id} #T")
 }
 
@@ -85,9 +87,7 @@ function file_select() {
 
 add_option "open" open_select
 add_option "edit" edit_select
-if [ "$MODE" != "new" ] ; then
-    add_tmux_windows
-fi
+add_tmux_windows
 add_options d dir_select recent-read dir
 add_options f file_select recent-read file
 do_fzf
