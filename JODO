@@ -10,6 +10,7 @@ nt --- Show $TODO_SHOW items
 Look at https://github.com/fniessink/next-action
 
 ct format --- Completes the task specified by format
+option to not repeat
 
 at --- Archive done
 
