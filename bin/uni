@@ -15,4 +15,5 @@ if [ "$1" != "" ] ; then
     Q="$1\$"
 fi
 
-cat $USR $LTX $PRC | fzf --query=$Q -1 -0 +i | cut -c 1
+# XXX make tmux an option
+printf "%s" $(cat $USR $LTX $PRC | fzf-tmux -d 7 -- --query=$Q -1 -0 +i | cut -c 1)
