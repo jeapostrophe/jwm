@@ -1,0 +1,9 @@
+#!/bin/sh
+KAK_SESSION=${KAK_SESSION:-lightning}
+RKAK=/usr/local/bin/kak
+
+if ! ($RKAK -l | grep $KAK_SESSION) ; then
+  $RKAK -d -s $KAK_SESSION
+fi
+
+exec $RKAK -c $KAK_SESSION $*

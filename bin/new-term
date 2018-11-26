@@ -2,7 +2,6 @@
 . ~/.profile
 SES=jwm
 
-
 if ! tmux has-session -t $SES &> /dev/null ; then
     tmux new-session -d -t $SES
     # XXX Make a "start" page

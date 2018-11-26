@@ -92,6 +92,8 @@ function file_select() {
 # XXX remove these and make a new "open"-like command that calls
 # $EDITOR or open depending on the file type
 
+# XXX use ranger
+
 # XXX also, go through the whole cwd right away rather than putting it
 # behind this
 add_option "open" open_select

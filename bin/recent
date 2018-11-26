@@ -3,6 +3,8 @@ PROG=$(basename $0)
 MODE=$1
 WHAT=$2
 
+# XXX replace this with fasd?
+
 DIR=${HOME}/.config/recent
 LOG=${DIR}/${MODE}
 

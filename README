@@ -1,1 +1,19 @@
 jwm - Jay's UI environment
+
+bin/ is what you want!
+
+dot-files in ~exp
+
+Current environment:
+- zsh
+- tmux
+- kakoune
+- bat
+- fzf
+- fd
+- Emacs (for org-mode)
+- Emacs (for Racket)
+
+Working on...
+- kakoune for Racket
+- todo.txt/kakoune for todo lists and time tracking
