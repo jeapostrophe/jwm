@@ -1,16 +1,13 @@
 #!/bin/sh
 UNIHOME=$HOME/.jwm/var
 
-RAW=$UNIHOME/raw.txt
-[ -f ${RAW} ] || curl http://www.unicode.org/Public/UNIDATA/UnicodeData.txt > ${RAW}
-
 PRC=$UNIHOME/proc.txt
-[ -f ${PRC} ] || (awk -F';' '{printf("\"%s\" \"%s %s\"\n", $1, $2, $11);}' ${RAW} | racket -e '(define (integer->char* i) (and i (<= 0 i #x10FFFF) (not (<= #xD800 i #xDFFF)) (integer->char i))) (let loop () (define u (read)) (unless (eof-object? u) (define c (integer->char* (string->number u 16))) (unless (or (not c) (char-iso-control? c)) (display c) (display " ") (displayln (string-titlecase (read)))) (loop)))') > ${PRC}
+[ -f ${PRC} ] || curl http://www.unicode.org/Public/UNIDATA/UnicodeData.txt | awk -F';' '{printf("\"%s\" \"%s %s\"\n", $1, $2, $11);}' | racket -e '(define (integer->char* i) (and i (<= 0 i #x10FFFF) (not (<= #xD800 i #xDFFF)) (integer->char i))) (let loop () (define u (read)) (unless (eof-object? u) (define c (integer->char* (string->number u 16))) (unless (or (not c) (char-iso-control? c)) (display c) (display " ") (displayln (string-titlecase (read)))) (loop)))' > ${PRC}
 
 LTX=$UNIHOME/latex.txt
 [ -f $LTX ] || curl https://raw.githubusercontent.com/joom/latex-unicoder.vim/master/autoload/unicoder.vim | grep -E ' +\\.* : .*' | sed -E -e 's/ +/ /g' -e 's/^ \\ .//' -e 's/.,?$//' -e 's/. : ./ /' -e 's/\\\\/\\/g' | awk '{print $2,$1}' > $LTX
 
-USR=$UNIHOME/usr.txt
+USR=$UNIHOME/user.txt
 [ -f $USR ] || touch $USR
 
 Q=""
