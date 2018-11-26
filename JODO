@@ -1,0 +1,62 @@
+JODO - TODO list system based on my needs
+
+Based on https://github.com/todotxt/todo.txt
+
+= Tools
+
+t format (without [ox]) --- Add to TODO list
+
+nt --- Show $TODO_SHOW items
+Look at https://github.com/fniessink/next-action
+
+ct format --- Completes the task specified by format
+
+at --- Archive done
+
+= Environment
+Use $TODO_PROJ and $TODO_CTXT to automatically add @CTXT and +PROJ to query
+
+From $PWD, search outward for .todo.txt in directories to accumulate todos
+Automatically use 'ag XXX' and 'ag TODO' to find more TODOs from $PWD
+
+t adds to closest file unless -f is provided
+
+ct complets from closest file and uses -f to add to same file
+
+= Format
+
+o or x -- Complete or not
+datetime -- Completion date (optional)
+datetime -- Start date (optional)
+desc -- String (may include context or project)
+tags
+
+where
+
+date := YYYY/MM/DD or YYYY-MM-DD
+time := HH:mm
+datetime := date@time or date
+id := string without spaces
+project := +id
+context := @id
+tags := listof tag
+tag := id:string
+
+Known tags:
+due:datetime
+id:id --- Name task
+(p|before):id --- Parent / Happens before
+after:id --- Happens after
+x:file --- Command to execute to do the activity
+f:file --- File where more information is contained
+t:file --- File to log time to
+r:repeat --- Repeat clause
+rd:repeat --- Repeat just for due
+rs:repeat --- Repeat just for start
+
+repeat := 
+ + -- next
+++ -- since completion
+ N -- how many
+ u -- unit (_m_onth, _d_ay, _w_eek, _b_usiness day)
+

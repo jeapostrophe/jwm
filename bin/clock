@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# XXX Implement this
+
+# Records when you were working on something by naming a file to log into
+# Returns the length of all logs and the length of current session
+# Maintains a global list of active clocks
