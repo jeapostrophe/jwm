@@ -1,0 +1,7 @@
+#!/bin/sh
+. ~/.profile
+
+# XXX query chunk to see if there is already a kitty window on the
+# desktop, send it a message to take it over?
+
+exec kitty -1 --listen-on=unix:/tmp/kitty.fifo -d $HOME $*

@@ -1,6 +1,6 @@
 #!/bin/sh
 KAK_SESSION=${KAK_SESSION:-lightning}
-RKAK=/usr/local/bin/kak
+RKAK=$HOME/bin/kak
 
 if ! ($RKAK -l | grep $KAK_SESSION) >/dev/null ; then
   $RKAK -d -s $KAK_SESSION
