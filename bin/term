@@ -49,9 +49,9 @@ function add_tmux_windows() {
 }
 
 function add_bookmarks() {
-    grep -v "^#" $HOME/.config/bookmarks.txt | while IFS="|" read cat title url ; do
+    while IFS="|" read cat title url ; do
         add_option "b [$cat] $title" $BROWSER "$url"
-    done
+    done < <(grep -v "^#" $HOME/.config/bookmarks.txt)
 }
 
 function do_fzf() {
