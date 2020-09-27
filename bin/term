@@ -1,11 +1,11 @@
 #!/bin/bash
-printf "\e]0;TERM\a\033kTERM\033\\"
+# printf "\e]0;TERM\a\033kTERM\033\\"
 
 FIFO=/tmp/term.$$.pipe
 mkfifo ${FIFO}.fzf
 mkfifo ${FIFO}.cut
 
-fzf -d " " --with-nth=2.. <${FIFO}.fzf >${FIFO}.cut &
+fzf --preview "timew; echo; echo {}" -d " " --with-nth=2.. <${FIFO}.fzf >${FIFO}.cut &
 FZF_PID=$!
 
 exec 3> ${FIFO}.fzf
@@ -48,6 +48,12 @@ function add_tmux_windows() {
     done < <(tmux list-windows -F "#{window_id} #T")
 }
 
+function add_timers() {
+  while read tag ; do
+    add_option "tw $tag" timew start "$tag"
+  done < <(timew tags | tail -n +4 | awk -F ' -' '{print $1}')
+}
+
 function add_bookmarks() {
     while IFS="|" read cat title url ; do
         add_option "b [$cat] $title" $BROWSER "$url"
@@ -64,7 +70,7 @@ function do_fzf() {
     exec 3>&- # Done with input to fzf
     read opt rest <&4
     exec 4<&- # Done with output from fzf
-    
+
     if [ "$opt" != "" ] ; then
         ${OPT_SEL[$opt]}
     fi
@@ -88,9 +94,8 @@ function tmux_select() {
     tmux select-window -t $1
 }
 function dir_select() {
-    #tmux select-window -t $(tmux new-window -F '#{window_id}' -P -c "$DIR")
     DIR=$1
-    cd $DIR && clear && exec $SHELL
+    exec $SHELL -ic "cd $DIR && exec $SHELL"
 }
 function file_select() {
     exec $EDITOR $1
@@ -112,13 +117,16 @@ function app_select() {
 
 # XXX also, go through the whole cwd right away rather than putting it
 # behind this
-add_option "HOME" dir_select ~
+add_option "cd" dir_select ~
+add_option "cd ~reach/reach-lang" dir_select ~reach/reach-lang
 add_option "open" open_select
 add_option "edit" edit_select
+add_option "twt" timew stop
+add_timers
 add_options a app_select ls $HOME/bin/apps
 add_bookmarks
 add_ssh_hosts
 # add_tmux_windows
-add_options d dir_select recent-read dir
-add_options f file_select recent-read file
+# add_options d dir_select recent-read dir
+# add_options f file_select recent-read file
 do_fzf
