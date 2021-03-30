@@ -1,11 +1,17 @@
 #!/bin/bash
 # printf "\e]0;TERM\a\033kTERM\033\\"
 
+# XXX rm /tmp/term.*
+
 FIFO=/tmp/term.$$.pipe
 mkfifo ${FIFO}.fzf
 mkfifo ${FIFO}.cut
 
-fzf --preview "timew; echo; echo {}" -d " " --with-nth=2.. <${FIFO}.fzf >${FIFO}.cut &
+export SELS=/tmp/term.$$.sels
+rm -f "$SELS"
+touch "$SELS"
+
+fzf --preview "timew; echo; sed {1}q\;d $SELS" -d " " --with-nth=2.. <${FIFO}.fzf >${FIFO}.cut &
 FZF_PID=$!
 
 exec 3> ${FIFO}.fzf
@@ -14,7 +20,7 @@ unlink ${FIFO}.fzf
 unlink ${FIFO}.cut
 
 OPT_SEL=()
-OIDX=0
+OIDX=1
 
 function add_option() {
     DIS=$1
@@ -26,6 +32,7 @@ function add_option() {
         break
     fi
     OPT_SEL[$OIDX]=$@
+    echo "$@" >> "${SELS}"
     OIDX=$(expr $OIDX + 1)
 }
 
