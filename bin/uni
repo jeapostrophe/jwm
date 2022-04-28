@@ -10,7 +10,7 @@ LTX=$UNIHOME/latex.txt
 USR=$UNIHOME/user.txt
 [ -f $USR ] || touch $USR
 
-if [ "$#" == 2 ] ; then
+if [ "x$#" = "x2" ] ; then
     DEF=$1
     Q=$2
     if ! printf "%s" "$Q" | grep -e "\\\\" ; then
@@ -21,7 +21,7 @@ else
     Q=$1
 fi
 
-if [ "$Q" != "" ] ; then
+if [ "x$Q" != "x" ] ; then
     Q="$Q\$"
 fi
 

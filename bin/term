@@ -1,17 +1,23 @@
 #!/bin/bash
 # printf "\e]0;TERM\a\033kTERM\033\\"
 
-# XXX rm /tmp/term.*
+TMP=${XDG_RUNTIME_DIR}
 
-FIFO=/tmp/term.$$.pipe
+FIFO=${TMP}/term.$$.pipe
 mkfifo ${FIFO}.fzf
 mkfifo ${FIFO}.cut
 
-export SELS=/tmp/term.$$.sels
+export SELS=${TMP}/term.$$.sels
 rm -f "$SELS"
 touch "$SELS"
 
-fzf --preview "timew; echo; sed {1}q\;d $SELS" -d " " --with-nth=2.. <${FIFO}.fzf >${FIFO}.cut &
+# "timew-line; echo; sed {1}q\;d $SELS"
+FZF_HIDE=
+if timew | grep 'no active' &>/dev/null ; then
+  FZF_HIDE=":hidden"
+fi
+fzf --preview-window="up:4${FZF_HIDE}" --preview "timew-line" -d " " --with-nth=2.. <${FIFO}.fzf >${FIFO}.cut &
+#fzf -d " " --with-nth=2.. <${FIFO}.fzf >${FIFO}.cut &
 FZF_PID=$!
 
 exec 3> ${FIFO}.fzf
@@ -28,12 +34,10 @@ function add_option() {
 
     if kill -0 $FZF_PID >/dev/null 2>&1 ; then
         echo $OIDX $DIS >&3
-    else
-        break
+        OPT_SEL[$OIDX]=$@
+        echo "$@" >> "${SELS}"
+        OIDX=$(expr $OIDX + 1)
     fi
-    OPT_SEL[$OIDX]=$@
-    echo "$@" >> "${SELS}"
-    OIDX=$(expr $OIDX + 1)
 }
 
 function add_options() {
@@ -55,10 +59,16 @@ function add_tmux_windows() {
     done < <(tmux list-windows -F "#{window_id} #T")
 }
 
+function add_todo() {
+  while read tid color lab ; do
+    add_option "t $(tput setaf $color)$lab$(tput sgr0)" ~/.todo/fast-ls xx $tid
+  done < <(~/.todo/fast-ls)
+}
+
 function add_timers() {
   while read tag ; do
     add_option "tw $tag" timew start "$tag"
-  done < <(timew tags | tail -n +4 | awk -F ' -' '{print $1}')
+  done < <(timew tags | grep -v 'old:' | tail -n +4 | awk -F ' -' '{print $1}')
 }
 
 function add_bookmarks() {
@@ -88,52 +98,64 @@ function do_fzf() {
 function open_select() {
     opt=$(fzf)
     if [ "$opt" != "" ] ; then
-        exec open $opt
+        exec open "$opt"
     fi
 }
 function edit_select() {
     opt=$(fzf)
     if [ "$opt" != "" ] ; then
-        exec $EDITOR $opt
+        exec $EDITOR "$opt"
     fi
 }
 function tmux_select() {
-    tmux select-window -t $1
+    tmux select-window -t "$1"
 }
 function dir_select() {
     DIR=$1
     exec $SHELL -ic "cd $DIR && exec $SHELL"
 }
 function file_select() {
-    exec $EDITOR $1
+    exec $EDITOR "$1"
 }
 function app_select() {
-    exec $HOME/bin/apps/$1
+    exec "$HOME/bin/apps/$1"
+}
+function gui_select() {
+    swaymsg exec "$HOME/bin/gui/$1"
+}
+function editdir_select() {
+    DIR=$1
+    exec $SHELL -ic "cd $DIR && exec $EDITOR"
 }
 
 # Configuration
 
 # XXX add some "applications" like calendar, irc, todo, browser, etc
 
-# XXX add my bookmarks, etc
-
 # XXX remove these and make a new "open"-like command that calls
 # $EDITOR or open depending on the file type
 
-# XXX use ranger
-
 # XXX also, go through the whole cwd right away rather than putting it
 # behind this
-add_option "cd" dir_select ~
-add_option "cd ~reach/reach-lang" dir_select ~reach/reach-lang
-add_option "open" open_select
-add_option "edit" edit_select
+# add_option "." ranger ~
+
+add_option "." dir_select ~
+add_option "home2" editdir_select ~home2
+# add_option "daily" jdaily
+# add_option "log" editdir_select ~home2
+# add_option "cd" dir_select ~
+# add_option "cd ~reach/reach-lang" dir_select ~reach/reach-lang
+# add_option "open" open_select
+# add_option "edit" edit_select
 add_option "twt" timew stop
+add_todo
 add_timers
+add_options g gui_select ls $HOME/bin/gui
 add_options a app_select ls $HOME/bin/apps
-add_bookmarks
-add_ssh_hosts
+# add_bookmarks
+# add_ssh_hosts
 # add_tmux_windows
 # add_options d dir_select recent-read dir
 # add_options f file_select recent-read file
+
 do_fzf
